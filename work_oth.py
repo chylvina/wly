@@ -30,7 +30,7 @@ class DownThread(threading.Thread):
             que_gsize = self.que_get.qsize()
             que_psize = self.que_pre.qsize()
 
-            if que_psize < 4 and que_gsize > 0:
+            if que_psize < 3 and que_gsize > 0:
                 try:
                     result_dict = self.que_get.get(block=True)
                     series = result_dict['series']
