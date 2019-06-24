@@ -33,6 +33,7 @@ class DownThread(threading.Thread):
 
             if que_psize < 3 and que_gsize > 0:
                 try:
+                    print(time.ctime(), ' ', i, ' Download operation start')
                     result_dict = self.que_get.get(block=True)
                     series = result_dict['series']
                     # print([ser['windowCenter'] for ser in series])
@@ -54,9 +55,13 @@ class DownThread(threading.Thread):
                         #     # img_name = os.path.join(s_path, file['imageUid'])
                         #     # downloading(file['url'], img_name)
                         #     img_name = os.path.join(s_path, file['imageUid'])
-
+                        print(time.ctime(), ' ', i,
+                              ' Download multiprocessing start')
+                        t_s = time.time()
                         self.pool.map(
                             partial(downloading, path=s_path), ser['files'])
+                        print(time.ctime(), ' Download operation cost',
+                              time.time() - t_s)
                         # down_pool.close()
                         # down_pool.join()
                         result_dict['seriesUid'] = ser['seriesUid']
