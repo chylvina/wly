@@ -12,6 +12,7 @@ import json
 
 requests.adapters.DEFAULT_RETRIES = 5
 
+
 class DownThread(threading.Thread):
     def __init__(self, que_get, que_pre):
         threading.Thread.__init__(self)
@@ -35,7 +36,10 @@ class DownThread(threading.Thread):
                     result_dict = self.que_get.get(block=True)
                     series = result_dict['series']
                     # print([ser['windowCenter'] for ser in series])
-                    windC = [int(ser['windowCenter'].split('\\')[0]) < 0 for ser in series]
+                    windC = [
+                        int(ser['windowCenter'].split('\\')[0]) < 0
+                        for ser in series
+                    ]
                     # print('windC:',windC)
                     if sum(windC):
                         ser = series[windC.index(True)]
@@ -51,7 +55,8 @@ class DownThread(threading.Thread):
                         #     # downloading(file['url'], img_name)
                         #     img_name = os.path.join(s_path, file['imageUid'])
 
-                        self.pool.map(partial(downloading, path=s_path), ser['files'])
+                        self.pool.map(
+                            partial(downloading, path=s_path), ser['files'])
                         # down_pool.close()
                         # down_pool.join()
                         result_dict['seriesUid'] = ser['seriesUid']
@@ -60,7 +65,8 @@ class DownThread(threading.Thread):
                             self.que_pre.put(result_dict)
                         except Exception as e:
                             self.queuePutErrCnt += 1
-                            print(time.ctime(), ' ', i, ' Get', self.queuePutErrCnt, ' Errors ;',
+                            print(time.ctime(), ' ', i, ' Get',
+                                  self.queuePutErrCnt, ' Errors ;',
                                   'Download put queue_pre: ', e)
                         i += 1
                         del result_dict, series, windC, ser, s_path
@@ -69,8 +75,8 @@ class DownThread(threading.Thread):
                 except Exception as e:
                     print(" download data error {}".format(e))
                     self.queueGetErrCnt += 1
-                    print(time.ctime(), ' ', i, ' Get', self.queueGetErrCnt, ' Errors ;',
-                          'Download get queue_get: ', e)
+                    print(time.ctime(), ' ', i, ' Get', self.queueGetErrCnt,
+                          ' Errors ;', 'Download get queue_get: ', e)
                     error_info(101, result_dict)
             else:
                 time.sleep(1)
@@ -108,33 +114,41 @@ class PullThread(threading.Thread):
             que_dsize = self.que_det.qsize()
             que_rsize = self.que_ret.qsize()
             try:
-                print('{} : {} {}- {} - {} - {} '.format(time.ctime(), i, que_gsize, que_psize, que_dsize, que_rsize))
+                print('{} : {} {}- {} - {} - {} '.format(
+                    time.ctime(), i, que_gsize, que_psize, que_dsize,
+                    que_rsize))
                 # if que_dsize < 2 and que_gsize < 2 and que_rsize < 2 and que_psize < 2:
                 if que_gsize < 4:
 
                     # if que_gsize < 100:
                     status, req_result = pull_task_http(self.pull_data_url, i)
                     if not status:
-                        print(time.ctime(), ' ', i, 'Pull operation status: ', status)
-                    if req_result=={}:
-                        print(time.ctime(), ' ', i, ' Pull operation result is None')
+                        print(time.ctime(), ' ', i, 'Pull operation status: ',
+                              status)
+                    if req_result == {}:
+                        print(time.ctime(), ' ', i,
+                              ' Pull operation result is None')
                     assert status, 110
                     if status:
                         if req_result['errCode'] == 0:
                             val = req_result['val']
                             if val == {}:
-                                print(time.ctime(), ' ', i, 'Pull operation result val is None')
+                                print(time.ctime(), ' ', i,
+                                      'Pull operation result val is None')
                             assert not val == {}
                             result_dict = {}
-                            result_dict['studyInstanceUid'] = val['studyInstanceUid']
-                            result_dict['customStudyInstanceUid'] = val['customStudyInstanceUid']
+                            result_dict['studyInstanceUid'] = val[
+                                'studyInstanceUid']
+                            result_dict['customStudyInstanceUid'] = val[
+                                'customStudyInstanceUid']
                             result_dict['series'] = val['series']
                             try:
                                 self.que_get.put(result_dict)
                             except Exception as e:
                                 self.queuePutErrCnt += 1
-                                print(time.ctime(), ' ', i, ' Get', self.queuePutErrCnt, ' Errors ;',
-                                ' Download put queue_get: ', e)
+                                print(time.ctime(), ' ', i, ' Get',
+                                      self.queuePutErrCnt, ' Errors ;',
+                                      ' Download put queue_get: ', e)
                             i += 1
                             del result_dict, status, req_result, val
                 else:
@@ -154,8 +168,10 @@ def pull_task_http(pull_data_url, i):
 
         if result.status_code == 200:
             result_json = result.json()
-            with open("/code/json3/"+str(i)+".json",'w',encoding='utf-8') as json_file:
-                json.dump(result_json,json_file)
+            with open(
+                    "/code/json3/" + str(i) + ".json", 'w',
+                    encoding='utf-8') as json_file:
+                json.dump(result_json, json_file)
             return True, result_json
         else:
             return False, {}
@@ -171,7 +187,6 @@ class PushThread(threading.Thread):
         # these variable create for log
         self.queueGetErrCnt = 0
 
-
     def run(self):
         i = 0
         while True:
@@ -179,40 +194,49 @@ class PushThread(threading.Thread):
                 result_dict = self.que_ret.get(block=True)
             except Exception as e:
                 self.queueGetErrCnt += 1
-                print(time.ctime(), ' ', i, ' Get', self.queueGetErrCnt, ' Errors ;',
-                'Push get queue_ret: ', e)
+                print(time.ctime(), ' ', i, ' Get', self.queueGetErrCnt,
+                      ' Errors ;', 'Push get queue_ret: ', e)
             try:
                 json_info = success_ret_info(result_dict)
-                url = self.push_data_url + '?customStudyUid=' + result_dict['customStudyInstanceUid']
+                url = self.push_data_url + '?customStudyUid=' + result_dict[
+                    'customStudyInstanceUid']
                 result = requests.post(url, json_info, timeout=2)
                 result_json = result.json()
                 if not result_json:
-                    print(time.ctime(), ' ', i, 'Push operation result is None.')
+                    print(time.ctime(), ' ', i,
+                          'Push operation result is None.')
                 i += 1
                 if os.path.exists(result_dict['data_path']):
                     shutil.rmtree(result_dict['data_path'])
-                print(time.ctime(), i, ' {} : {} '.format(result_json, json_info))
+                print(time.ctime(), i, ' {} : {} '.format(
+                    result_json, json_info))
                 del result_dict, result, result_json, url
             except Exception as e:
                 print(time.ctime(), 'Push operation; ', e)
 
 
-def pull_from_json():
+def pull_from_json(i):
     try:
-        dirList = os.listdir()
-        with open("/code/json/1.json",'r') as load_f:
+        fileList = find_all_json()
+        with open(fileList[i], 'r') as load_f:
             load_dict = json.load(load_f)
             print(load_dict)
-
         if load_dict:
-            status = True
-
-        if result.status_code == 200:
-            result_json = result.json()
-            with open("/code/json3/"+str(i)+".json",'w',encoding='utf-8') as json_file:
-                json.dump(result_json,json_file)
+            status = 200
+        if status == 200:
+            result_json = load_dict
             return True, result_json
         else:
             return False, {}
     except Exception as e:
         print(time.ctime(), 'Pull operation;', e)
+
+
+def find_all_json():
+    jsonPaths = []
+    dirList = os.listdir('/code/')
+    for jsonPath in dirList:
+        if 'json' in jsonPath:
+            for jsonFile in os.listdir(os.path.join('/code', jsonPath)):
+                jsonPaths.append(os.path.join('/code', jsonPath, jsonFile))
+    return jsonPaths
