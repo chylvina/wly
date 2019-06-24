@@ -1,6 +1,5 @@
 import threading
 import time
-import numpy as np
 import os
 import shutil
 from utils.ret_utils import success_ret_info
@@ -21,9 +20,6 @@ class DownThread(threading.Thread):
         os.makedirs(self.data_path, exist_ok=True)
         self.que_pre = que_pre
         self.pool = Pool(processes=10)
-        # these variable create for log
-        self.queueGetErrCnt = 0
-        self.queuePutErrCnt = 0
 
     def run(self):
         i = 0
@@ -66,22 +62,13 @@ class DownThread(threading.Thread):
                         # down_pool.join()
                         result_dict['seriesUid'] = ser['seriesUid']
                         result_dict['data_path'] = s_path
-                        try:
-                            self.que_pre.put(result_dict)
-                        except Exception as e:
-                            self.queuePutErrCnt += 1
-                            print(time.ctime(), ' ', i, ' Get',
-                                  self.queuePutErrCnt, ' Errors ;',
-                                  'Download put queue_pre: ', e)
+                        self.que_pre.put(result_dict)
                         i += 1
                         del result_dict, series, windC, ser, s_path
                     else:
                         assert False, 101
                 except Exception as e:
                     print(" download data error {}".format(e))
-                    self.queueGetErrCnt += 1
-                    print(time.ctime(), ' ', i, ' Get', self.queueGetErrCnt,
-                          ' Errors ;', 'Download get queue_get: ', e)
                     error_info(101, result_dict)
             else:
                 time.sleep(1)
@@ -108,8 +95,6 @@ class PullThread(threading.Thread):
         self.que_det = que_det
         self.que_ret = que_ret
         self.pull_data_url = 'http://39.96.243.14:9191/api/gpu/next?modality=CT&st=5'
-        # these variable create for log
-        self.queuePutErrCnt = 0
 
     def run(self):
         i = 0
@@ -147,13 +132,7 @@ class PullThread(threading.Thread):
                             result_dict['customStudyInstanceUid'] = val[
                                 'customStudyInstanceUid']
                             result_dict['series'] = val['series']
-                            try:
-                                self.que_get.put(result_dict)
-                            except Exception as e:
-                                self.queuePutErrCnt += 1
-                                print(time.ctime(), ' ', i, ' Get',
-                                      self.queuePutErrCnt, ' Errors ;',
-                                      ' Download put queue_get: ', e)
+                            self.que_get.put(result_dict)
                             i += 1
                             del result_dict, status, req_result, val
                 else:
@@ -189,18 +168,11 @@ class PushThread(threading.Thread):
         threading.Thread.__init__(self)
         self.que_ret = que_ret
         self.push_data_url = 'http://39.96.243.14:9191/api/gpu/submit'
-        # these variable create for log
-        self.queueGetErrCnt = 0
 
     def run(self):
         i = 0
         while True:
-            try:
-                result_dict = self.que_ret.get(block=True)
-            except Exception as e:
-                self.queueGetErrCnt += 1
-                print(time.ctime(), ' ', i, ' Get', self.queueGetErrCnt,
-                      ' Errors ;', 'Push get queue_ret: ', e)
+            result_dict = self.que_ret.get(block=True)
             try:
                 json_info = success_ret_info(result_dict)
                 url = self.push_data_url + '?customStudyUid=' + result_dict[
