@@ -27,49 +27,53 @@ class DownThread(threading.Thread):
     def run(self):
         i = 0
         while True:
-            try:
-                result_dict = self.que_get.get(block=True)
-            except Exception as e:
-                self.queueGetErrCnt += 1
-                print(time.ctime(), ' ', i, ' Get', self.queueGetErrCnt, ' Errors ;',
-                'Download get queue_get: ', e)
-            try:
-                series = result_dict['series']
-                # print([ser['windowCenter'] for ser in series])
-                windC = [int(ser['windowCenter'].split('\\')[0]) < 0 for ser in series]
-                # print('windC:',windC)
-                if sum(windC):
-                    ser = series[windC.index(True)]
-                    s_path = os.path.join(self.data_path, ser['seriesUid'])
-                    if os.path.exists(s_path):
-                        shutil.rmtree(s_path)
-                        os.mkdir(s_path)
-                    else:
-                        os.mkdir(s_path)
-                    # down_pool = Pool(processes=5)
-                    # for i, file in enumerate(ser['files']):
-                    #     # img_name = os.path.join(s_path, file['imageUid'])
-                    #     # downloading(file['url'], img_name)
-                    #     img_name = os.path.join(s_path, file['imageUid'])
+            que_gsize = self.que_get.qsize()
+            que_psize = self.que_pre.qsize()
 
-                    self.pool.map(partial(downloading, path=s_path), ser['files'])
-                    # down_pool.close()
-                    # down_pool.join()
-                    result_dict['seriesUid'] = ser['seriesUid']
-                    result_dict['data_path'] = s_path
-                    try:
-                        self.que_pre.put(result_dict)
-                    except Exception as e:
-                        self.queuePutErrCnt += 1
-                        print(time.ctime(), ' ', i, ' Get', self.queuePutErrCnt, ' Errors ;',
-                        'Download put queue_pre: ', e)
-                    i += 1
-                    del result_dict, series, windC, ser, s_path
-                else:
-                    assert False, 101
-            except Exception as e:
-                print(" download data error {}".format(e))
-                error_info(101, result_dict)
+            if que_psize < 4 and que_gsize > 0:
+                try:
+                    result_dict = self.que_get.get(block=True)
+                    series = result_dict['series']
+                    # print([ser['windowCenter'] for ser in series])
+                    windC = [int(ser['windowCenter'].split('\\')[0]) < 0 for ser in series]
+                    # print('windC:',windC)
+                    if sum(windC):
+                        ser = series[windC.index(True)]
+                        s_path = os.path.join(self.data_path, ser['seriesUid'])
+                        if os.path.exists(s_path):
+                            shutil.rmtree(s_path)
+                            os.mkdir(s_path)
+                        else:
+                            os.mkdir(s_path)
+                        # down_pool = Pool(processes=5)
+                        # for i, file in enumerate(ser['files']):
+                        #     # img_name = os.path.join(s_path, file['imageUid'])
+                        #     # downloading(file['url'], img_name)
+                        #     img_name = os.path.join(s_path, file['imageUid'])
+
+                        self.pool.map(partial(downloading, path=s_path), ser['files'])
+                        # down_pool.close()
+                        # down_pool.join()
+                        result_dict['seriesUid'] = ser['seriesUid']
+                        result_dict['data_path'] = s_path
+                        try:
+                            self.que_pre.put(result_dict)
+                        except Exception as e:
+                            self.queuePutErrCnt += 1
+                            print(time.ctime(), ' ', i, ' Get', self.queuePutErrCnt, ' Errors ;',
+                                  'Download put queue_pre: ', e)
+                        i += 1
+                        del result_dict, series, windC, ser, s_path
+                    else:
+                        assert False, 101
+                except Exception as e:
+                    print(" download data error {}".format(e))
+                    self.queueGetErrCnt += 1
+                    print(time.ctime(), ' ', i, ' Get', self.queueGetErrCnt, ' Errors ;',
+                          'Download get queue_get: ', e)
+                    error_info(101, result_dict)
+            else:
+                time.sleep(1)
 
 
 def downloading(file, path):
