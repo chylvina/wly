@@ -28,7 +28,7 @@ class LungSegmentUnet(object):
         except Exception as e:
             print('Lung Segment Unet DataParallel Error: ', e)
 
-    @func_set_timeout(60)
+    @func_set_timeout(20)
     def cut(self, data, b_s=64):
         """ input:
                 data: D * H * W ndarray
