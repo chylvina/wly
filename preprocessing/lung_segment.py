@@ -21,9 +21,9 @@ class LungSegmentUnet(object):
         self.net.load_state_dict(checkpoint['state_dir'])
         # self.net = self.net.cuda()
         try:
-            # self.net = self.net.cuda()
+            self.net = DataParallel(self.net).cuda()
             # chylvina
-            self.net = self.net.cpu()
+            # self.net = self.net.cpu()
             self.net.eval()
         except Exception as e:
             print('Lung Segment Unet DataParallel Error: ', e)
@@ -65,7 +65,7 @@ class LungSegmentUnet(object):
         tensor = Variable(torch.from_numpy(data), volatile=True)
 
         for i in range(len(splitlist) - 1):
-            input = tensor[splitlist[i]:splitlist[i + 1]].cpu()
+            input = tensor[splitlist[i]:splitlist[i + 1]].cuda()
             batch_size = len(input)
 
             output = self.net(input)
@@ -80,6 +80,6 @@ class LungSegmentUnet(object):
             output = output[:, :, pad_w:]
         if pad_h > 0:
             output = output[:, pad_h:, :]
-        # torch.cuda.empty_cache()
+        torch.cuda.empty_cache()
         del outputlist,tensor,data,splitlist
         return output
