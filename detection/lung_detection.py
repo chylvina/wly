@@ -44,20 +44,20 @@ class LungDetection(object):
         print(time.ctime(), ' Lung Detection has ',len(splitlist),' Imgs')
         for i in range(len(splitlist) - 1):
             # img: torch.Size([1, 1, 208, 208, 208])
-            input = Variable(imgs[splitlist[i]:splitlist[i + 1]]).cuda()
-            inputcoord = Variable(coord[splitlist[i]:splitlist[i + 1]]).cuda()
+            input = Variable(imgs[splitlist[i]:splitlist[i + 1]]).cuda(self.index)
+            inputcoord = Variable(coord[splitlist[i]:splitlist[i + 1]]).cuda(self.index)
             output = self.nod_net(input, inputcoord)
             # print('out_put:',output.data.cpu().numpy().shape)
             outputlist.append(output.data.cpu().numpy())
             # chylvina
-            torch.cuda.empty_cache()
+            # torch.cuda.empty_cache()
             del output
         output = np.concatenate(outputlist, 0)
 
         output = self.split_comber.combine(output, nzhw=nzhw)
         thresh = -3
         pbb, _ = self.get_pbb(output, thresh, ismask=True)
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
         pbb = nms(pbb, 0.05)
         nodule_df = pbb_to_df(pbb, spacing, endbox, mask)
         nodule_df = nodule_df[nodule_df.probability > 0.25]
