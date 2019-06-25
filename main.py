@@ -39,20 +39,26 @@ if __name__ == '__main__':
         down_thread.setDaemon(True)
         down_thread.start()
 
-    # cpu_thread_nums = 2
-    # for i in range(cpu_thread_nums):
-    #     cpu_thread = CpuThread(que_pre, que_det)
-    #     cpu_thread.setDaemon(True)
-    #     cpu_thread.start()
+    cpu_thread_nums = 3
+    for i in range(cpu_thread_nums):
+        cpu_thread = CpuThread(que_pre, que_det)
+        cpu_thread.setDaemon(True)
+        cpu_thread.start()
 
-    cpu_thread = CpuThread(que_pre, que_det)
-    cpu_thread.setDaemon(True)
-    cpu_thread.start()
+    # cpu_thread = CpuThread(que_pre, que_det)
+    # cpu_thread.setDaemon(True)
+    # cpu_thread.start()
+
+    gpu_thread_nums = 2
+    for i in range(gpu_thread_nums):
+        gpu_thread = GpuThread(que_det, que_ret, i)
+        gpu_thread.setDaemon(True)
+        gpu_thread.start()
 
 
-    gpu_thread = GpuThread(que_det, que_ret)
-    gpu_thread.setDaemon(True)
-    gpu_thread.start()
+    # gpu_thread = GpuThread(que_det, que_ret)
+    # gpu_thread.setDaemon(True)
+    # gpu_thread.start()
     #
     push_thread = PushThread(que_ret)
     push_thread.setDaemon(True)

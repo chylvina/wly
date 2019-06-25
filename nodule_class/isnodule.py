@@ -25,7 +25,11 @@ class LungIsncls(object):
         self.index = index
         isn_net = Net()
         isn_net.load_state_dict(torch.load(model_path))
+<<<<<<< HEAD
         isn_net = isn_net.cuda(self.index)
+=======
+        isn_net = isn_net.cuda()
+>>>>>>> a864a77a3bd7b7f7ec96e0aa1a7df904bcc9ee63
         isn_net.eval()
         self.isn_net = isn_net
 
