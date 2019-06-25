@@ -74,7 +74,6 @@ class PullThread(threading.Thread):
                             ]
                             result_dict["series"] = val["series"]
 
-                            i += 1
                             del status, req_result, val
 
                             try:
