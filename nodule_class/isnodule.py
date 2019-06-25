@@ -24,7 +24,7 @@ class LungIsncls(object):
     def __init__(self, model_path):
         isn_net = Net()
         isn_net.load_state_dict(torch.load(model_path))
-        isn_net = DataParallel(isn_net).cuda()
+        isn_net = isn_net.cuda()
         isn_net.eval()
         self.isn_net = isn_net
 

@@ -12,7 +12,7 @@ import weakref
 
 
 class GpuThread(threading.Thread):
-    def __init__(self, que_det, que_ret):
+    def __init__(self, que_det, que_ret, index):
         threading.Thread.__init__(self)
         self.que_det = que_det
         self.que_ret = que_ret

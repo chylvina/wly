@@ -21,7 +21,7 @@ class LungSegmentUnet(object):
         self.net.load_state_dict(checkpoint['state_dir'])
         # self.net = self.net.cuda()
         try:
-            self.net = DataParallel(self.net).cuda()
+            self.net = self.net.cuda()
             self.net.eval()
         except Exception as e:
             print('Lung Segment Unet DataParallel Error: ', e)

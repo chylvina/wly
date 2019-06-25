@@ -25,7 +25,7 @@ class LungDetection(object):
         checkpoint = torch.load(model_path)
         nod_net.load_state_dict(checkpoint)
         # chylvina
-        nod_net = DataParallel(nod_net).cuda()
+        nod_net = nod_net.cuda()
         nod_net.eval()
         self.nod_net = nod_net
         self.get_pbb = get_pbb
