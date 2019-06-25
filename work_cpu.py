@@ -63,7 +63,7 @@ class CpuThread(threading.Thread):
             except FunctionTimedOut:
                 print(time.ctime() + 'FUN TIMEOUT ')
             except Exception as e:
-                print('CPU ERROR:', e, result_dict['data_path'])
+                print("CPU ERROR:", " ", i, e, result_dict["data_path"])
                 error_info(100, result_dict)
 
 

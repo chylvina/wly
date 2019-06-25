@@ -82,7 +82,7 @@ class GpuThread(threading.Thread):
             except FunctionTimedOut:
                 print(time.ctime() + "FUN TIMEOUT ")
             except Exception as e:
-                print(time.ctime() + "GPU ERROR : {} ".format(e))
+                print(time.ctime() + "GPU ERROR : {}  {}".format(e, i))
                 error_info(200, result_dict)
 
     @func_set_timeout(5)
