@@ -57,7 +57,7 @@ class LungDetection(object):
         output = self.split_comber.combine(output, nzhw=nzhw)
         thresh = -3
         pbb, _ = self.get_pbb(output, thresh, ismask=True)
-        # torch.cuda.empty_cache()
+        torch.cuda.empty_cache()
         pbb = nms(pbb, 0.05)
         nodule_df = pbb_to_df(pbb, spacing, endbox, mask)
         nodule_df = nodule_df[nodule_df.probability > 0.25]
