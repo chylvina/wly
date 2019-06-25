@@ -60,19 +60,20 @@ def success_ret_info(result_dict):
 
 
 def error_ret_info(msg, result_dict):
-    if result_dict:
-        try:
-            push_data_url = 'http://39.96.243.14:9191/api/gpu/submit'
-            url = push_data_url + '?customStudyUid=' + result_dict['customStudyInstanceUid']
-            result = requests.post(url, msg)
-            print(time.ctime(),msg, result.json())
-            del result_dict,result
-            s = requests.session()
-            s.keep_alive = False
-            s.close()
-        except Exception as e:
-            print("error_ret_info error {}".format(e))
-            pass
+    print('error', msg, result_dict)
+    # if result_dict:
+    #     try:
+    #         push_data_url = 'http://39.96.243.14:9191/api/gpu/submit'
+    #         url = push_data_url + '?customStudyUid=' + result_dict['customStudyInstanceUid']
+    #         result = requests.post(url, msg)
+    #         print(time.ctime(),msg, result.json())
+    #         del result_dict,result
+    #         s = requests.session()
+    #         s.keep_alive = False
+    #         s.close()
+    #     except Exception as e:
+    #         print("error_ret_info error {}".format(e))
+    #         pass
 
 if __name__ == '__main__':
     result_dict = {'errorCode': 100, 'errorMsg': 'The cpu process is abnormal.',
