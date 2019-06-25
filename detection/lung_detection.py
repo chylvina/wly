@@ -12,12 +12,13 @@ import time
 
 
 class LungDetection(object):
-    def __init__(self, model_path):
+    def __init__(self, model_path, index):
         max_stride = 16
         margin = 32
         stride = 4
         sidelen = 144
         pad_value = 170
+        self.index = index
         self.split_comber = split_combine.SplitComb(sidelen, max_stride, stride, margin, pad_value)
 
         # detection net
@@ -25,7 +26,7 @@ class LungDetection(object):
         checkpoint = torch.load(model_path)
         nod_net.load_state_dict(checkpoint)
         # chylvina
-        nod_net = DataParallel(nod_net).cuda()
+        nod_net = nod_net.cuda(self.index)
         nod_net.eval()
         self.nod_net = nod_net
         self.get_pbb = get_pbb
