@@ -9,11 +9,12 @@ from func_timeout import FunctionTimedOut
 
 
 class CpuThread(threading.Thread):
-    def __init__(self, que_pre, que_det):
+    def __init__(self, que_pre, que_det, cpu_thread_type):
         threading.Thread.__init__(self)
         self.que_pre = que_pre
         self.que_det = que_det
-        self.lung_segm = LungSegmentUnet('./model/lung_segment.ckpt')
+        self.cpu_thread_type = cpu_thread_type
+        self.lung_segm = LungSegmentUnet('./model/lung_segment.ckpt', self.cpu_thread_type)
         self.pool = Pool(processes=1)
         # self.pool = Pool(processes=1, maxtasksperchild=10)
 

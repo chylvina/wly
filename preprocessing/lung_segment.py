@@ -5,28 +5,34 @@ from torch.autograd import Variable
 from preprocessing.segment.unet import UNet
 from func_timeout import func_set_timeout
 
+
 def lumTrans(img):
     img = img.astype(np.float)
-    lungwin = np.array([-1200., 600.])
+    lungwin = np.array([-1200.0, 600.0])
     img = np.clip(img, lungwin[0], lungwin[1], img)
     img -= lungwin[0]
-    img *= (255. / (lungwin[1] - lungwin[0]))
+    img *= 255.0 / (lungwin[1] - lungwin[0])
     return img.astype(np.float32)
 
 
 class LungSegmentUnet(object):
-    def __init__(self, model):
+    def __init__(self, model, cpu_thread_type):
+        self.cpu_thread_type = cpu_thread_type
         self.net = UNet(color_dim=3, num_classes=3)
         checkpoint = torch.load(model)
-        self.net.load_state_dict(checkpoint['state_dir'])
+        self.net.load_state_dict(checkpoint["state_dir"])
         # self.net = self.net.cuda()
         try:
-            self.net = DataParallel(self.net).cuda()
+            self.net = (
+                DataParallel(self.net).cuda()
+                if self.cpu_thread_type == "gpu"
+                else self.net.cpu()
+            )
             # chylvina
             # self.net = self.net.cpu()
             self.net.eval()
         except Exception as e:
-            print('Lung Segment Unet DataParallel Error: ', e)
+            print("Lung Segment Unet DataParallel Error: ", e)
 
     @func_set_timeout(20)
     def cut(self, data, b_s=64):
@@ -52,7 +58,9 @@ class LungSegmentUnet(object):
 
         data = np.expand_dims(data, 1)
 
-        x, y = np.meshgrid(np.linspace(-1, 1, p_h), np.linspace(-1, 1, p_w), indexing='ij')
+        x, y = np.meshgrid(
+            np.linspace(-1, 1, p_h), np.linspace(-1, 1, p_w), indexing="ij"
+        )
         x, y = x.astype(np.float32)[np.newaxis, :], y.astype(np.float32)[np.newaxis, :]
         # concat
         data = np.stack([np.concatenate([d, x, y], 0) for d in data])  # D*3*H*W
@@ -65,7 +73,11 @@ class LungSegmentUnet(object):
         tensor = Variable(torch.from_numpy(data), volatile=True)
 
         for i in range(len(splitlist) - 1):
-            input = tensor[splitlist[i]:splitlist[i + 1]].cuda()
+            input = (
+                tensor[splitlist[i] : splitlist[i + 1]].cuda()
+                if self.cpu_thread_type == "gpu"
+                else tensor[splitlist[i] : splitlist[i + 1]].cpu()
+            )
             batch_size = len(input)
 
             output = self.net(input)
@@ -80,6 +92,7 @@ class LungSegmentUnet(object):
             output = output[:, :, pad_w:]
         if pad_h > 0:
             output = output[:, pad_h:, :]
-        torch.cuda.empty_cache()
-        del outputlist,tensor,data,splitlist
+        if self.cpu_thread_type == "gpu":
+            torch.cuda.empty_cache()
+        del outputlist, tensor, data, splitlist
         return output

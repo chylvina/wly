@@ -38,10 +38,11 @@ if __name__ == '__main__':
         down_thread = DownThread(que_get, que_pre)
         down_thread.setDaemon(True)
         down_thread.start()
-
+    # use gpu or cpu
+    cpu_thread_type = "gpu" 
     cpu_thread_nums = 3
     for i in range(cpu_thread_nums):
-        cpu_thread = CpuThread(que_pre, que_det)
+        cpu_thread = CpuThread(que_pre, que_det, cpu_thread_type)
         cpu_thread.setDaemon(True)
         cpu_thread.start()
 
