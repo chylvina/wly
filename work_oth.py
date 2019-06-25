@@ -12,66 +12,6 @@ import json
 requests.adapters.DEFAULT_RETRIES = 5
 
 
-class DownThread(threading.Thread):
-    def __init__(self, que_get, que_pre):
-        threading.Thread.__init__(self)
-        self.que_get = que_get
-        self.data_path = "/tmp/data/"
-        os.makedirs(self.data_path, exist_ok=True)
-        self.que_pre = que_pre
-        self.pool = Pool(processes=10)
-
-    def run(self):
-        i = 0
-        while True:
-            que_gsize = self.que_get.qsize()
-            que_psize = self.que_pre.qsize()
-
-            if que_psize < 3 and que_gsize > 0:
-                try:
-                    print(time.ctime(), " ", i, " Download operation start")
-                    result_dict = self.que_get.get(block=True)
-                    series = result_dict["series"]
-                    # print([ser['windowCenter'] for ser in series])
-                    windC = [
-                        int(ser["windowCenter"].split("\\")[0]) < 0 for ser in series
-                    ]
-                    # print('windC:',windC)
-                    if sum(windC):
-                        ser = series[windC.index(True)]
-                        s_path = os.path.join(self.data_path, ser["seriesUid"])
-                        if os.path.exists(s_path):
-                            shutil.rmtree(s_path)
-                            os.mkdir(s_path)
-                        else:
-                            os.mkdir(s_path)
-                        # down_pool = Pool(processes=5)
-                        # for i, file in enumerate(ser['files']):
-                        #     # img_name = os.path.join(s_path, file['imageUid'])
-                        #     # downloading(file['url'], img_name)
-                        #     img_name = os.path.join(s_path, file['imageUid'])
-                        print(time.ctime(), " ", i, " Download multiprocessing start")
-                        t_s = time.time()
-                        self.pool.map(partial(downloading, path=s_path), ser["files"])
-                        print(
-                            time.ctime(), " Download operation cost", time.time() - t_s
-                        )
-                        # down_pool.close()
-                        # down_pool.join()
-                        result_dict["seriesUid"] = ser["seriesUid"]
-                        result_dict["data_path"] = s_path
-                        self.que_pre.put(result_dict)
-                        i += 1
-                        del result_dict, series, windC, ser, s_path
-                    else:
-                        assert False, 101
-                except Exception as e:
-                    print(" download data error {}".format(e))
-                    error_info(101, result_dict)
-            else:
-                time.sleep(1)
-
-
 def downloading(file, path):
     save_path = os.path.join(path, file["imageUid"])
     try:
@@ -86,30 +26,30 @@ def downloading(file, path):
 
 
 class PullThread(threading.Thread):
-    def __init__(self, que_get, que_pre, que_det, que_ret):
+    def __init__(self, que_pre, que_det, que_ret):
         threading.Thread.__init__(self)
-        self.que_get = que_get
         self.que_pre = que_pre
         self.que_det = que_det
         self.que_ret = que_ret
         self.pull_data_url = "http://39.96.243.14:9191/api/gpu/next?modality=CT&st=5"
+        self.data_path = "/tmp/data/"
+        os.makedirs(self.data_path, exist_ok=True)
+        self.pool = Pool(processes=10)
 
     def run(self):
         i = 0
         while True:
-            que_gsize = self.que_get.qsize()
             que_psize = self.que_pre.qsize()
             que_dsize = self.que_det.qsize()
             que_rsize = self.que_ret.qsize()
             try:
                 print(
-                    "{} : {} {}- {} - {} - {} ".format(
-                        time.ctime(), i, que_gsize, que_psize, que_dsize, que_rsize
+                    "{} : {} {}-{}-{} ".format(
+                        time.ctime(), i, que_psize, que_dsize, que_rsize
                     )
                 )
-                if que_dsize < 4 and que_gsize < 4 and que_rsize < 4 and que_psize < 4:
+                if que_dsize < 4 and que_rsize < 4 and que_psize < 4:
 
-                    # if que_gsize < 100:
                     status, req_result = pull_from_oss(i)
                     if not status:
                         print(time.ctime(), " ", i, "Pull operation status: ", status)
@@ -133,9 +73,49 @@ class PullThread(threading.Thread):
                                 "customStudyInstanceUid"
                             ]
                             result_dict["series"] = val["series"]
-                            self.que_get.put(result_dict)
+
                             i += 1
-                            del result_dict, status, req_result, val
+                            del status, req_result, val
+
+                            try:
+                                print(time.ctime(), " ", i, " Download operation start")
+                                series = result_dict["series"]
+                                # print([ser['windowCenter'] for ser in series])
+                                windC = [
+                                    int(ser["windowCenter"].split("\\")[0]) < 0 for ser in series
+                                ]
+                                # print('windC:',windC)
+                                if sum(windC):
+                                    ser = series[windC.index(True)]
+                                    s_path = os.path.join(self.data_path, ser["seriesUid"])
+                                    if os.path.exists(s_path):
+                                        shutil.rmtree(s_path)
+                                        os.mkdir(s_path)
+                                    else:
+                                        os.mkdir(s_path)
+                                    # down_pool = Pool(processes=5)
+                                    # for i, file in enumerate(ser['files']):
+                                    #     # img_name = os.path.join(s_path, file['imageUid'])
+                                    #     # downloading(file['url'], img_name)
+                                    #     img_name = os.path.join(s_path, file['imageUid'])
+                                    print(time.ctime(), " ", i, " Download multiprocessing start")
+                                    t_s = time.time()
+                                    self.pool.map(partial(downloading, path=s_path), ser["files"])
+                                    print(
+                                        time.ctime(), " Download operation cost", time.time() - t_s
+                                    )
+                                    # down_pool.close()
+                                    # down_pool.join()
+                                    result_dict["seriesUid"] = ser["seriesUid"]
+                                    result_dict["data_path"] = s_path
+                                    self.que_pre.put(result_dict)
+                                    i += 1
+                                    del result_dict, series, windC, ser, s_path
+                                else:
+                                    assert False, 101
+                            except Exception as e:
+                                print(" download data error {}".format(e))
+                                error_info(101, result_dict)
                 else:
                     time.sleep(1)
             except AssertionError as e:

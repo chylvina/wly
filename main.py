@@ -2,7 +2,7 @@ from flask import Flask
 import queue
 from work_cpu import CpuThread
 from work_gpu import GpuThread
-from work_oth import DownThread, PullThread, PushThread
+from work_oth import PullThread, PushThread
 import time
 import warnings
 
@@ -19,13 +19,11 @@ def hello():
 
 if __name__ == '__main__':
     hello()
-    # que_get, que_pre, que_det, que_ret
-    que_get = queue.Queue()
     que_pre = queue.Queue()
     que_det = queue.Queue()
     que_ret = queue.Queue()
 
-    pull_thread = PullThread(que_get, que_pre, que_det, que_ret)
+    pull_thread = PullThread(que_pre, que_det, que_ret)
     pull_thread.setDaemon(True)
     pull_thread.start()
 
@@ -33,11 +31,11 @@ if __name__ == '__main__':
     # down_thread.setDaemon(True)
     # down_thread.start()
 
-    down_thread_nums = 2
-    for i in range(down_thread_nums):
-        down_thread = DownThread(que_get, que_pre)
-        down_thread.setDaemon(True)
-        down_thread.start()
+    # down_thread_nums = 2
+    # for i in range(down_thread_nums):
+    #     down_thread = DownThread(que_get, que_pre)
+    #     down_thread.setDaemon(True)
+    #     down_thread.start()
     # use gpu or cpu
     cpu_thread_type = "gpu" 
     cpu_thread_nums = 3
