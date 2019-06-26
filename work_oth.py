@@ -45,7 +45,7 @@ class PullThread(threading.Thread):
                         time.ctime(), i, que_psize, que_dsize, que_rsize
                     )
                 )
-                if que_dsize < 4 and que_rsize < 4 and que_psize < 4:
+                if que_dsize < 6 and que_rsize < 6 and que_psize < 6:
 
                     status, req_result = pull_from_oss(i)
                     if not status:
