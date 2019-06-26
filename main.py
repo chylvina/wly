@@ -6,18 +6,19 @@ from work_oth import PullThread, PushThread
 import time
 import warnings
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
 
 
 # http://192.168.1.222:9595/api/gpu/next?modality=CT&st=5
 
+
 def hello():
-    print('Wan Li Yun Provide Services \n Dete Servcie ')
+    print("Wan Li Yun Provide Services \n Dete Servcie ")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     hello()
     que_pre = queue.Queue()
     que_det = queue.Queue()
@@ -38,8 +39,9 @@ if __name__ == '__main__':
     #     down_thread.start()
     # use gpu or cpu
 
-    for i in range(4):
-        cpu_thread = CpuThread(que_pre, que_det, "gpu")
+    cpu_thread_nums = 4
+    for i in range(cpu_thread_nums):
+        cpu_thread = CpuThread(que_pre, que_det, "gpu", i % 2)
         cpu_thread.setDaemon(True)
         cpu_thread.start()
 
@@ -50,10 +52,9 @@ if __name__ == '__main__':
 
     gpu_thread_nums = 2
     for i in range(gpu_thread_nums):
-        gpu_thread = GpuThread(que_det, que_ret, i%2)
+        gpu_thread = GpuThread(que_det, que_ret, i % 2)
         gpu_thread.setDaemon(True)
         gpu_thread.start()
-
 
     # gpu_thread = GpuThread(que_det, que_ret)
     # gpu_thread.setDaemon(True)
@@ -67,7 +68,7 @@ if __name__ == '__main__':
         while push_thread.isAlive():
             time.sleep(2)
     except KeyboardInterrupt:
-        print('stopped by keyboard')
+        print("stopped by keyboard")
     # add MAX HU
     # add AUG HU
 

@@ -16,15 +16,16 @@ def lumTrans(img):
 
 
 class LungSegmentUnet(object):
-    def __init__(self, model, cpu_thread_type):
+    def __init__(self, model, cpu_thread_type, index):
         self.cpu_thread_type = cpu_thread_type
+        self.index = index
         self.net = UNet(color_dim=3, num_classes=3)
         checkpoint = torch.load(model)
         self.net.load_state_dict(checkpoint["state_dir"])
         # self.net = self.net.cuda()
         try:
             self.net = (
-                DataParallel(self.net).cuda()
+                self.net.cuda(self.index)
                 if self.cpu_thread_type == "gpu"
                 else self.net.cpu()
             )
@@ -74,7 +75,7 @@ class LungSegmentUnet(object):
 
         for i in range(len(splitlist) - 1):
             input = (
-                tensor[splitlist[i] : splitlist[i + 1]].cuda()
+                tensor[splitlist[i] : splitlist[i + 1]].cuda(self.index)
                 if self.cpu_thread_type == "gpu"
                 else tensor[splitlist[i] : splitlist[i + 1]].cpu()
             )
