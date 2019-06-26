@@ -61,7 +61,7 @@ class CpuThread(threading.Thread):
                 i += 1
                 del result_dict, case, spacing, prep_mask, prep_data, extendbox
             except FunctionTimedOut:
-                print(time.ctime() + 'FUN TIMEOUT ')
+                print(time.ctime() + 'GPU FUN TIMEOUT ')
             except Exception as e:
                 print("CPU ERROR:", " ", i, e)
                 error_info(100, result_dict)

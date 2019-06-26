@@ -80,7 +80,7 @@ class GpuThread(threading.Thread):
                 del result_dict, nodule_df, preb
 
             except FunctionTimedOut:
-                print(time.ctime() + "FUN TIMEOUT ")
+                print(time.ctime() + "CPU FUN TIMEOUT ")
             except Exception as e:
                 print(time.ctime() + "GPU ERROR : {}  {}".format(e, i))
                 error_info(200, result_dict)
