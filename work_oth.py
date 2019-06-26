@@ -14,13 +14,10 @@ requests.adapters.DEFAULT_RETRIES = 5
 
 def downloading(file, path):
     save_path = os.path.join(path, file["imageUid"])
-    try:
-        r = requests.get(file["url"], timeout=3)
-    except requests.exceptions.RequestException as e:
-        print(time.ctime(), "Download operation;", e)
+    r = requests.get(file["url"], timeout=3)
+    assert r, 111
     assert r.status_code == 200, 111
-    if not r.content:
-        print(time.ctime(), "Download operation result is None")
+    assert r.content, "Download operation result is None"
     with open(save_path + ".dcm", "wb") as code:
         code.write(r.content)
 
@@ -107,13 +104,14 @@ class PullThread(threading.Thread):
                                     # down_pool.join()
                                     result_dict["seriesUid"] = ser["seriesUid"]
                                     result_dict["data_path"] = s_path
+                                    result_dict["json_id"] = i
                                     self.que_pre.put(result_dict)
                                     i += 1
                                     del result_dict, series, windC, ser, s_path
                                 else:
                                     assert False, 101
                             except Exception as e:
-                                print(" download data error {}".format(e))
+                                print(" download data error {} {}".format(e, i))
                                 error_info(101, result_dict)
                 else:
                     time.sleep(1)

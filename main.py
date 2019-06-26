@@ -38,19 +38,19 @@ if __name__ == '__main__':
     #     down_thread.start()
     # use gpu or cpu
 
-    cpu_thread_nums = 3
-    for i in range(cpu_thread_nums):
+    for i in range(4):
         cpu_thread = CpuThread(que_pre, que_det, "gpu")
         cpu_thread.setDaemon(True)
         cpu_thread.start()
 
-    cpu_thread = CpuThread(que_pre, que_det, "cpu")
-    cpu_thread.setDaemon(True)
-    cpu_thread.start()
+    # for i in range(1):
+    #     cpu_thread = CpuThread(que_pre, que_det, "cpu")
+    #     cpu_thread.setDaemon(True)
+    #     cpu_thread.start()
 
     gpu_thread_nums = 2
     for i in range(gpu_thread_nums):
-        gpu_thread = GpuThread(que_det, que_ret, i)
+        gpu_thread = GpuThread(que_det, que_ret, i%2)
         gpu_thread.setDaemon(True)
         gpu_thread.start()
 
@@ -70,3 +70,4 @@ if __name__ == '__main__':
         print('stopped by keyboard')
     # add MAX HU
     # add AUG HU
+
