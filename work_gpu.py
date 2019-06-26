@@ -88,7 +88,7 @@ class GpuThread(threading.Thread):
             except FunctionTimedOut:
                 print(time.ctime(), result_dict["json_id"], "FUN TIMEOUT ")
             except Exception as e:
-                if result_dict:
+                if result_dict and "json_id" in result_dict.keys():
                     print(
                         time.ctime()
                         + "GPU ERROR : {}  {}".format(e, result_dict["json_id"])

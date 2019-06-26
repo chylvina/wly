@@ -63,7 +63,7 @@ class CpuThread(threading.Thread):
             except FunctionTimedOut:
                 print(time.ctime() + 'FUN TIMEOUT ')
             except Exception as e:
-                if result_dict:
+                if result_dict and "json_id" in result_dict.keys():
                     print(time.ctime(), "CPU ERROR:", " ", result_dict["json_id"], e)
                     error_info(100, result_dict)
                 else:
