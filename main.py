@@ -44,9 +44,9 @@ if __name__ == '__main__':
         cpu_thread.setDaemon(True)
         cpu_thread.start()
 
-    cpu_thread = CpuThread(que_pre, que_det, "cpu")
-    cpu_thread.setDaemon(True)
-    cpu_thread.start()
+    # cpu_thread = CpuThread(que_pre, que_det, "cpu")
+    # cpu_thread.setDaemon(True)
+    # cpu_thread.start()
 
     gpu_thread_nums = 2
     for i in range(gpu_thread_nums):

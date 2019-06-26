@@ -37,7 +37,7 @@ class GpuThread(threading.Thread):
         while True:
             result_dict = self.que_det.get(block=True)
             try:
-                print(time.ctime(), " ", i, " Using GPU Device ", self.index)
+                print(time.ctime(), " ", result_dict["json_id"], " Using GPU Device ", self.index)
                 t_s = time.time()
                 nodule_df = self.lung_dete.prediction(
                     result_dict["prep_data"],
@@ -48,7 +48,7 @@ class GpuThread(threading.Thread):
                 print(
                     time.ctime(),
                     " ",
-                    i,
+                    result_dict["json_id"],
                     "GPU DOING USE TIME(lung dete prediction):",
                     time.time() - t_s,
                 )
@@ -59,7 +59,7 @@ class GpuThread(threading.Thread):
                 print(
                     time.ctime(),
                     " ",
-                    i,
+                    result_dict["json_id"],
                     "GPU DOING USE TIME(lung isnc nodule cls):",
                     time.time() - t_s,
                 )
@@ -72,7 +72,7 @@ class GpuThread(threading.Thread):
                 print(
                     time.ctime(),
                     " ",
-                    i,
+                    result_dict["json_id"],
                     "GPU DOING US TIME(lung lobe):",
                     time.time() - t_s,
                 )
@@ -80,9 +80,9 @@ class GpuThread(threading.Thread):
                 del result_dict, nodule_df, preb
 
             except FunctionTimedOut:
-                print(time.ctime() + "FUN TIMEOUT ")
+                print(time.ctime(), result_dict["json_id"], "FUN TIMEOUT ")
             except Exception as e:
-                print(time.ctime() + "GPU ERROR : {}  {}".format(e, i))
+                print(time.ctime() + "GPU ERROR : {}  {}".format(e, result_dict["json_id"]))
                 error_info(200, result_dict)
 
     @func_set_timeout(5)

@@ -107,13 +107,14 @@ class PullThread(threading.Thread):
                                     # down_pool.join()
                                     result_dict["seriesUid"] = ser["seriesUid"]
                                     result_dict["data_path"] = s_path
+                                    result_dict["json_id"] = i
                                     self.que_pre.put(result_dict)
                                     i += 1
                                     del result_dict, series, windC, ser, s_path
                                 else:
                                     assert False, 101
                             except Exception as e:
-                                print(" download data error {}".format(e))
+                                print(" download data error {} {}".format(e, i))
                                 error_info(101, result_dict)
                 else:
                     time.sleep(1)

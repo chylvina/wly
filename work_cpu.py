@@ -29,13 +29,13 @@ class CpuThread(threading.Thread):
                 # case, spacing, instances = res.get()
                 case, spacing, instances = read_dicom.load_dicom2(
                     result_dict['data_path'])
-                print(time.ctime(), ' ', i, ' load dicom use :',
+                print(time.ctime(), ' ', result_dict["json_id"], ' load dicom use :',
                       time.time() - t_s)
                 # assert 40 < case.shape[0] < 80
                 # lung_segm = LungSegmentUnet('./model/lung_segment.ckpt')
                 t_s = time.time()
                 prep_mask = self.lung_segm.cut(case, 20)
-                print(time.ctime(), ' ', i, ' lung segment cut use :',
+                print(time.ctime(), ' ', result_dict["json_id"], ' lung segment cut use :',
                       time.time() - t_s)
                 # prep_mask = lung_segm.cut(case, 30)
                 # del lung_segm
@@ -53,7 +53,7 @@ class CpuThread(threading.Thread):
                 result_dict['prep_mask'] = prep_mask
                 result_dict['prep_ebox'] = extendbox
                 print(
-                    time.ctime(), ' ', i,
+                    time.ctime(), ' ', result_dict["json_id"],
                     ' cpu process task us time: {}.{}'.format(
                         time.time() - t_s, ' result dict: ',
                         result_dict['data_path']))
@@ -63,7 +63,7 @@ class CpuThread(threading.Thread):
             except FunctionTimedOut:
                 print(time.ctime() + 'FUN TIMEOUT ')
             except Exception as e:
-                print("CPU ERROR:", " ", i, e)
+                print("CPU ERROR:", " ", result_dict["json_id"], e)
                 error_info(100, result_dict)
 
 
