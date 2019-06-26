@@ -19,6 +19,7 @@ def downloading(file, path):
     except requests.exceptions.RequestException as e:
         print(time.ctime(), "Download operation;", e)
     assert r.status_code == 200, 111
+    assert r != {}
     if not r.content:
         print(time.ctime(), "Download operation result is None")
     with open(save_path + ".dcm", "wb") as code:
@@ -81,12 +82,15 @@ class PullThread(threading.Thread):
                                 series = result_dict["series"]
                                 # print([ser['windowCenter'] for ser in series])
                                 windC = [
-                                    int(ser["windowCenter"].split("\\")[0]) < 0 for ser in series
+                                    int(ser["windowCenter"].split("\\")[0]) < 0
+                                    for ser in series
                                 ]
                                 # print('windC:',windC)
                                 if sum(windC):
                                     ser = series[windC.index(True)]
-                                    s_path = os.path.join(self.data_path, ser["seriesUid"])
+                                    s_path = os.path.join(
+                                        self.data_path, ser["seriesUid"]
+                                    )
                                     if os.path.exists(s_path):
                                         shutil.rmtree(s_path)
                                         os.mkdir(s_path)
@@ -97,11 +101,20 @@ class PullThread(threading.Thread):
                                     #     # img_name = os.path.join(s_path, file['imageUid'])
                                     #     # downloading(file['url'], img_name)
                                     #     img_name = os.path.join(s_path, file['imageUid'])
-                                    print(time.ctime(), " ", i, " Download multiprocessing start")
-                                    t_s = time.time()
-                                    self.pool.map(partial(downloading, path=s_path), ser["files"])
                                     print(
-                                        time.ctime(), " Download operation cost", time.time() - t_s
+                                        time.ctime(),
+                                        " ",
+                                        i,
+                                        " Download multiprocessing start",
+                                    )
+                                    t_s = time.time()
+                                    self.pool.map(
+                                        partial(downloading, path=s_path), ser["files"]
+                                    )
+                                    print(
+                                        time.ctime(),
+                                        " Download operation cost",
+                                        time.time() - t_s,
                                     )
                                     # down_pool.close()
                                     # down_pool.join()
@@ -150,7 +163,7 @@ class PushThread(threading.Thread):
         i = 0
         while True:
             result_dict = self.que_ret.get(block=True)
-            print('finish123')
+            print("finish123")
             # try:
             #     json_info = success_ret_info(result_dict)
             #     url = (
