@@ -5,6 +5,8 @@ from work_gpu import GpuThread
 from work_oth import PullThread, PushThread
 import time
 import warnings
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL)
 
 warnings.filterwarnings("ignore")
 

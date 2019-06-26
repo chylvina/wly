@@ -36,10 +36,10 @@ class PullThread(threading.Thread):
     def run(self):
         i = 0
         while True:
-            que_psize = self.que_pre.qsize()
-            que_dsize = self.que_det.qsize()
-            que_rsize = self.que_ret.qsize()
             try:
+                que_psize = self.que_pre.qsize()
+                que_dsize = self.que_det.qsize()
+                que_rsize = self.que_ret.qsize()
                 print(
                     "{} : {} {}-{}-{} ".format(
                         time.ctime(), i, que_psize, que_dsize, que_rsize

@@ -23,9 +23,10 @@ class CpuThread(threading.Thread):
 
     def run(self):
         i = 0
+        result_dict = None
         while True:
-            result_dict = self.que_pre.get(block=True)
             try:
+                result_dict = self.que_pre.get(block=True)
                 t_s = time.time()
                 print(result_dict["data_path"])
                 # res = self.pool.apply_async(cpu_preprocess_1, (result_dict,))
@@ -81,10 +82,9 @@ class CpuThread(threading.Thread):
             except Exception as e:
                 if result_dict and "json_id" in result_dict.keys():
                     print(time.ctime(), "CPU ERROR:", " ", result_dict["json_id"], e)
-                    error_info(100, result_dict)
                 else:
                     print(time.ctime(), "CPU ERROR:", " ", e)
-
+                error_info(100, result_dict)
 
 #
 # if __name__ == '__main__':

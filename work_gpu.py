@@ -34,9 +34,10 @@ class GpuThread(threading.Thread):
 
     def run(self):
         i = 0
+        result_dict = None
         while True:
-            result_dict = self.que_det.get(block=True)
             try:
+                result_dict = self.que_det.get(block=True)
                 print(
                     time.ctime(),
                     " ",
@@ -74,7 +75,7 @@ class GpuThread(threading.Thread):
                 t_s = time.time()
                 preb = self.lung_lobe(preb, result_dict["prep_mask"])
                 result_dict["nodule_preb"] = preb
-                self.que_ret.put(result_dict, timeout=2)
+                self.que_ret.put(result_dict)
                 print(
                     time.ctime(),
                     " ",
@@ -93,9 +94,10 @@ class GpuThread(threading.Thread):
                         time.ctime()
                         + "GPU ERROR : {}  {}".format(e, result_dict["json_id"])
                     )
-                    error_info(200, result_dict)
                 else:
                     print(time.ctime() + "GPU ERROR : {}".format(e))
+
+                error_info(200, result_dict)
 
     @func_set_timeout(5)
     def lung_lobe(self, nodule_df, mask):
