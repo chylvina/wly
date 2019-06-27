@@ -134,7 +134,7 @@ class PullThread(threading.Thread):
                 print(time.ctime(), " ", i, "PULL ERROR: {}".format(e))
 
 
-def pull_task_http(i):
+def pull_task_http(pull_data_url, i):
     try:
         result = requests.get(pull_data_url, timeout=3)
 
