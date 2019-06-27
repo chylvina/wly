@@ -161,14 +161,14 @@ def two_lung_only(bw, spacing, max_iter=22, max_ratio=4.8):
 
     return bw1
 
-def prepare_data2(case, spacing, mask):
+def prepare_data2(case, spacing, mask, id):
     resolution = np.array([1, 1, 1])
     t_s = time.time()
     sliceim = lumTrans(case)
-    print(time.ctime(), ' Prepare Data1 ',time.time() - t_s)
+    print(time.ctime(), " file:", id, ' Prepare Data1 ',time.time() - t_s)
     t_s = time.time()
     mask = two_lung_only(mask, spacing)
-    print(time.ctime(), ' Prepare Data2 ',time.time() - t_s)
+    print(time.ctime(), " file:", id, ' Prepare Data2 ',time.time() - t_s)
     t_s = time.time()
     mask = mask > 0
     zz, yy, xx = np.where(mask)
@@ -180,7 +180,7 @@ def prepare_data2(case, spacing, mask):
                            np.min([sliceim.shape * spacing, box[:, 1] + margin], axis=0).T]).T
     extendbox = extendbox.astype(int)
     dilatedMask = process_mask(mask, spacing)
-    print(time.ctime(), ' Prepare Data3 ',time.time() - t_s)
+    print(time.ctime(), " file:", id, ' Prepare Data3 ',time.time() - t_s)
     t_s = time.time()
     extramask = dilatedMask ^ mask
 
@@ -193,7 +193,7 @@ def prepare_data2(case, spacing, mask):
     sliceim[bones] = pad_value
 
     sliceim1, true_spacing = resample(sliceim, spacing, resolution, order=1)
-    print(time.ctime(), ' Prepare Data4 ',time.time() - t_s)
+    print(time.ctime(), " file:", id, ' Prepare Data4 ',time.time() - t_s)
     sliceim2 = sliceim1[extendbox[0, 0]:extendbox[0, 1],
                extendbox[1, 0]:extendbox[1, 1],
                extendbox[2, 0]:extendbox[2, 1]]
