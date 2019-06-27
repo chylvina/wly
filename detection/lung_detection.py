@@ -19,7 +19,8 @@ class LungDetection(object):
         sidelen = 144
         pad_value = 170
         self.index = index
-        self.split_comber = split_combine.SplitComb(sidelen, max_stride, stride, margin, pad_value)
+        self.split_comber = split_combine.SplitComb(sidelen, max_stride,
+                                                    stride, margin, pad_value)
 
         # detection net
         config1, nod_net, loss, get_pbb = res18.get_model()
@@ -31,21 +32,24 @@ class LungDetection(object):
         self.nod_net = nod_net
         self.get_pbb = get_pbb
 
-    @func_set_timeout(20)
+    @func_set_timeout(60)
     def prediction(self, imgs, spacing, endbox, mask):
         stride = 4
         pad_value = 170
-        imgs, coord, nzhw = data_loader(imgs, stride, pad_value, self.split_comber)
+        imgs, coord, nzhw = data_loader(imgs, stride, pad_value,
+                                        self.split_comber)
 
         splitlist = range(0, len(imgs) + 1, 1)
         if splitlist[-1] != len(imgs):
             splitlist.append(len(imgs))
         outputlist = []
-        print(time.ctime(), ' Lung Detection has ',len(splitlist),' Imgs')
+        print(time.ctime(), ' Lung Detection has ', len(splitlist), ' Imgs')
         for i in range(len(splitlist) - 1):
             # img: torch.Size([1, 1, 208, 208, 208])
-            input = Variable(imgs[splitlist[i]:splitlist[i + 1]]).cuda(self.index)
-            inputcoord = Variable(coord[splitlist[i]:splitlist[i + 1]]).cuda(self.index)
+            input = Variable(imgs[splitlist[i]:splitlist[i + 1]]).cuda(
+                self.index)
+            inputcoord = Variable(coord[splitlist[i]:splitlist[i + 1]]).cuda(
+                self.index)
             output = self.nod_net(input, inputcoord)
             # print('out_put:',output.data.cpu().numpy().shape)
             outputlist.append(output.data.cpu().numpy())

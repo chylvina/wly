@@ -24,11 +24,8 @@ class LungSegmentUnet(object):
         self.net.load_state_dict(checkpoint["state_dir"])
         # self.net = self.net.cuda()
         try:
-            self.net = (
-                self.net.cuda(self.index)
-                if self.cpu_thread_type == "gpu"
-                else self.net.cpu()
-            )
+            self.net = (self.net.cuda(self.index)
+                        if self.cpu_thread_type == "gpu" else self.net.cpu())
             # chylvina
             # self.net = self.net.cpu()
             self.net.eval()
@@ -60,11 +57,12 @@ class LungSegmentUnet(object):
         data = np.expand_dims(data, 1)
 
         x, y = np.meshgrid(
-            np.linspace(-1, 1, p_h), np.linspace(-1, 1, p_w), indexing="ij"
-        )
-        x, y = x.astype(np.float32)[np.newaxis, :], y.astype(np.float32)[np.newaxis, :]
+            np.linspace(-1, 1, p_h), np.linspace(-1, 1, p_w), indexing="ij")
+        x, y = x.astype(np.float32)[np.newaxis, :], y.astype(
+            np.float32)[np.newaxis, :]
         # concat
-        data = np.stack([np.concatenate([d, x, y], 0) for d in data])  # D*3*H*W
+        data = np.stack(
+            [np.concatenate([d, x, y], 0) for d in data])  # D*3*H*W
 
         splitlist = list(range(0, len(data) + 1, b_s))
         if splitlist[-1] != len(data):
@@ -74,15 +72,14 @@ class LungSegmentUnet(object):
         tensor = Variable(torch.from_numpy(data), volatile=True)
 
         for i in range(len(splitlist) - 1):
-            input = (
-                tensor[splitlist[i] : splitlist[i + 1]].cuda(self.index)
-                if self.cpu_thread_type == "gpu"
-                else tensor[splitlist[i] : splitlist[i + 1]].cpu()
-            )
+            input = (tensor[splitlist[i]:splitlist[i + 1]].cuda(self.index)
+                     if self.cpu_thread_type == "gpu" else
+                     tensor[splitlist[i]:splitlist[i + 1]].cpu())
             batch_size = len(input)
 
             output = self.net(input)
-            output = output.transpose(1, 3).transpose(1, 2).contiguous().view(-1, 3)
+            output = output.transpose(1, 3).transpose(1, 2).contiguous().view(
+                -1, 3)
             _, output = output.data.max(dim=1)
             output[output > 0] += 2
             output = output.view(batch_size, p_h, p_w)
