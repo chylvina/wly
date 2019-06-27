@@ -60,9 +60,9 @@ class GpuThread(threading.Thread):
                     time.time() - t_s,
                 )
                 t_s = time.time()
-                preb = self.lung_isnc.nodule_cls(
-                    nodule_df, result_dict["prep_case"], result_dict["prep_spac"]
-                )
+                preb = self.lung_isnc.nodule_cls(nodule_df,
+                                                 result_dict["prep_case"],
+                                                 result_dict["prep_spac"])
                 print(
                     time.ctime(),
                     " ",
@@ -90,10 +90,8 @@ class GpuThread(threading.Thread):
                 print(time.ctime(), result_dict["json_id"], "GPU FUN TIMEOUT ")
             except Exception as e:
                 if result_dict and "json_id" in result_dict.keys():
-                    print(
-                        time.ctime()
-                        + "GPU ERROR : {}  {}".format(e, result_dict["json_id"])
-                    )
+                    print(time.ctime() + "GPU ERROR : {}  {}".format(
+                        e, result_dict["json_id"]))
                 else:
                     print(time.ctime() + "GPU ERROR : {}".format(e))
 
@@ -107,10 +105,12 @@ class GpuThread(threading.Thread):
 
         lobel_info = []
         for nodule in nodule_df_values:
-            lung, lobe = lobe_locate_gmm(nodule, mask, self.left_gmm, self.right_gmm)
+            lung, lobe = lobe_locate_gmm(nodule, mask, self.left_gmm,
+                                         self.right_gmm)
             lungs.append(lung)
             lobes.append(lobe)
-            lobel_info.append(lung + "肺" + (lobe + "叶" if not lobe == "" else ""))
+            lobel_info.append(lung + "肺" +
+                              (lobe + "叶" if not lobe == "" else ""))
         nodule_df["lung"] = lungs
         nodule_df["lobe"] = lobes
 

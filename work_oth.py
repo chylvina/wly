@@ -40,18 +40,17 @@ class PullThread(threading.Thread):
                 que_psize = self.que_pre.qsize()
                 que_dsize = self.que_det.qsize()
                 que_rsize = self.que_ret.qsize()
-                print(
-                    "{} : {} {}-{}-{} ".format(
-                        time.ctime(), i, que_psize, que_dsize, que_rsize
-                    )
-                )
+                print("{} : {} {}-{}-{} ".format(time.ctime(), i, que_psize,
+                                                 que_dsize, que_rsize))
                 if que_dsize < 6 and que_rsize < 6 and que_psize < 6:
 
                     status, req_result = pull_from_oss(i)
                     if not status:
-                        print(time.ctime(), " ", i, "Pull operation status: ", status)
+                        print(time.ctime(), " ", i, "Pull operation status: ",
+                              status)
                     if req_result == {}:
-                        print(time.ctime(), " ", i, " Pull operation result is None")
+                        print(time.ctime(), " ", i,
+                              " Pull operation result is None")
                     assert status, 110
                     if status:
                         if req_result["errCode"] == 0:
@@ -65,16 +64,17 @@ class PullThread(threading.Thread):
                                 )
                             assert not val == {}
                             result_dict = {}
-                            result_dict["studyInstanceUid"] = val["studyInstanceUid"]
+                            result_dict["studyInstanceUid"] = val[
+                                "studyInstanceUid"]
                             result_dict["customStudyInstanceUid"] = val[
-                                "customStudyInstanceUid"
-                            ]
+                                "customStudyInstanceUid"]
                             result_dict["series"] = val["series"]
 
                             del status, req_result, val
 
                             try:
-                                print(time.ctime(), " ", i, " Download operation start")
+                                print(time.ctime(), " ", i,
+                                      " Download operation start")
                                 series = result_dict["series"]
                                 # print([ser['windowCenter'] for ser in series])
                                 windC = [
@@ -85,8 +85,7 @@ class PullThread(threading.Thread):
                                 if sum(windC):
                                     ser = series[windC.index(True)]
                                     s_path = os.path.join(
-                                        self.data_path, ser["seriesUid"]
-                                    )
+                                        self.data_path, ser["seriesUid"])
                                     if os.path.exists(s_path):
                                         shutil.rmtree(s_path)
                                         os.mkdir(s_path)
@@ -105,8 +104,8 @@ class PullThread(threading.Thread):
                                     )
                                     t_s = time.time()
                                     self.pool.map(
-                                        partial(downloading, path=s_path), ser["files"]
-                                    )
+                                        partial(downloading, path=s_path),
+                                        ser["files"])
                                     print(
                                         time.ctime(),
                                         " Download operation cost",
@@ -123,7 +122,9 @@ class PullThread(threading.Thread):
                                 else:
                                     assert False, 101
                             except Exception as e:
-                                print(" download data error {} {}".format(e, i))
+                                print(
+                                    time.ctime(),
+                                    " download data error {} {}".format(e, i))
                                 error_info(101, result_dict)
                 else:
                     time.sleep(1)
@@ -159,7 +160,10 @@ class PushThread(threading.Thread):
         i = 0
         while True:
             result_dict = self.que_ret.get(block=True)
-            print("finish123")
+            print(time.ctime(), " file: ", result_dict["json_id"], "finished.")
+            json_info = success_ret_info(result_dict)
+            print(time.ctime(), " file: ", result_dict["json_id"],
+                  " push result: ", json_info)
             # try:
             #     json_info = success_ret_info(result_dict)
             #     url = (
@@ -210,8 +214,7 @@ def find_all_json():
 
 def pull_from_oss(i):
 
-    if i > 10:
-        return False, {}
+    i = i % 980
 
     try:
         pull_data_url = "https://suanpan-public.oss-cn-shanghai.aliyuncs.com/json5/"
@@ -223,4 +226,3 @@ def pull_from_oss(i):
             return False, {}
     except Exception as e:
         print(time.ctime(), " ", i, "Pull operation;", e)
-
