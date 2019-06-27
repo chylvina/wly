@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=logging.INFO)
-handler = logging.FileHandler("log/log.txt")
+handler = logging.FileHandler("/tmp/wly/log.txt")
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s  - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
