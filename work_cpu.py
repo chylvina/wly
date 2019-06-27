@@ -15,9 +15,8 @@ class CpuThread(threading.Thread):
         self.que_det = que_det
         self.cpu_thread_type = cpu_thread_type
         self.index = index
-        self.lung_segm = LungSegmentUnet(
-            "./model/lung_segment.ckpt", self.cpu_thread_type, self.index
-        )
+        self.lung_segm = LungSegmentUnet("./model/lung_segment.ckpt",
+                                         self.cpu_thread_type, self.index)
         self.pool = Pool(processes=1)
         # self.pool = Pool(processes=1, maxtasksperchild=10)
 
@@ -32,8 +31,7 @@ class CpuThread(threading.Thread):
                 # res = self.pool.apply_async(cpu_preprocess_1, (result_dict,))
                 # case, spacing, instances = res.get()
                 case, spacing, instances = read_dicom.load_dicom2(
-                    result_dict["data_path"]
-                )
+                    result_dict["data_path"])
                 print(
                     time.ctime(),
                     " ",
@@ -56,10 +54,11 @@ class CpuThread(threading.Thread):
                 # del lung_segm
                 # print('cat  us :', time.time() - t_s)
                 t_s = time.time()
-                res = self.pool.apply_async(prepare_data2, (case, spacing, prep_mask))
-                prep_data, extendbox = res.get(timeout=20)
+                # res = self.pool.apply_async(prepare_data2, (case, spacing, prep_mask, result_dict["json_id"]))
+                # prep_data, extendbox = res.get(timeout=20)
 
-                # prep_data, extendbox = prepare_data2(case, spacing, prep_mask)
+                prep_data, extendbox = prepare_data2(case, spacing, prep_mask,
+                                                     result_dict["json_id"])
                 result_dict["prep_case"] = case
                 result_dict["prep_spac"] = spacing
                 result_dict["prep_inst"] = instances
@@ -71,20 +70,23 @@ class CpuThread(threading.Thread):
                     " ",
                     result_dict["json_id"],
                     " cpu process task us time: {}.{}".format(
-                        time.time() - t_s, " result dict: ", result_dict["data_path"]
-                    ),
+                        time.time() - t_s, " result dict: ",
+                        result_dict["data_path"]),
                 )
                 self.que_det.put(result_dict)
                 i += 1
                 del result_dict, case, spacing, prep_mask, prep_data, extendbox
             except FunctionTimedOut:
-                print(time.ctime() + "CPU FUN TIMEOUT ")
+                print(time.ctime() + "CPU FUN TIMEOUT ", " ",
+                      result_dict["json_id"])
             except Exception as e:
                 if result_dict and "json_id" in result_dict.keys():
-                    print(time.ctime(), "CPU ERROR:", " ", result_dict["json_id"], e)
+                    print(time.ctime(), "CPU ERROR:", " ",
+                          result_dict["json_id"], e)
                 else:
                     print(time.ctime(), "CPU ERROR:", " ", e)
                 error_info(100, result_dict)
+
 
 #
 # if __name__ == '__main__':
