@@ -44,7 +44,7 @@ class PullThread(threading.Thread):
                                                  que_dsize, que_rsize))
                 if que_dsize < 6 and que_rsize < 6 and que_psize < 6:
 
-                    status, req_result = pull_from_oss(i)
+                    status, req_result = pull_task_http(self.pull_data_url, i)
                     if not status:
                         print(time.ctime(), " ", i, "Pull operation status: ",
                               status)
@@ -134,7 +134,7 @@ class PullThread(threading.Thread):
                 print(time.ctime(), " ", i, "PULL ERROR: {}".format(e))
 
 
-def pull_task_http(pull_data_url, i):
+def pull_task_http(i):
     try:
         result = requests.get(pull_data_url, timeout=3)
 
@@ -159,30 +159,30 @@ class PushThread(threading.Thread):
     def run(self):
         i = 0
         while True:
-            result_dict = self.que_ret.get(block=True)
-            print(time.ctime(), " file: ", result_dict["json_id"], "finished.")
-            json_info = success_ret_info(result_dict)
-            print(time.ctime(), " file: ", result_dict["json_id"],
-                  " push result: ", json_info)
-            # try:
-            #     json_info = success_ret_info(result_dict)
-            #     url = (
-            #         self.push_data_url
-            #         + "?customStudyUid="
-            #         + result_dict["customStudyInstanceUid"]
-            #     )
-            #     result = requests.post(url, json_info, timeout=2)
-            #     result_json = json_info
-            #     if not result_json:
-            #         print(time.ctime(), " ", i, "Push operation result is None.")
-            #     i += 1
-            #     if os.path.exists(result_dict["data_path"]):
-            #         shutil.rmtree(result_dict["data_path"])
-            #     print(time.ctime(), " ", i, " {} ".format(json_info))
-            #     # del result_dict, result, result_json, url
-            #     del result_dict, result_json
-            # except Exception as e:
-            #     print(time.ctime(), "Push operation; ", e)
+            try:
+                result_dict = self.que_ret.get(block=True)
+                print(time.ctime(), " file: ", result_dict["json_id"], "finished.")
+                json_info = success_ret_info(result_dict)
+                # print(time.ctime(), " file: ", result_dict["json_id"],
+                #   " push result: ", json_info)
+                # json_info = success_ret_info(result_dict)
+                url = (
+                    self.push_data_url
+                    + "?customStudyUid="
+                    + result_dict["customStudyInstanceUid"]
+                )
+                result = requests.post(url, json_info, timeout=2)
+                result_json = json_info
+                if not result_json:
+                    print(time.ctime(), " ", i, "Push operation result is None.")
+                i += 1
+                if os.path.exists(result_dict["data_path"]):
+                    shutil.rmtree(result_dict["data_path"])
+                print(time.ctime(), " ", i, " {} ".format(json_info))
+                # del result_dict, result, result_json, url
+                del result_dict, result_json
+            except Exception as e:
+                print(time.ctime(), "Push operation; ", e)
 
 
 def pull_from_json(i):
