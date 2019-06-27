@@ -154,35 +154,27 @@ class PushThread(threading.Thread):
     def __init__(self, que_ret):
         threading.Thread.__init__(self)
         self.que_ret = que_ret
-        self.push_data_url = "http://39.96.243.14:9191/api/gpu/submit"
+        self.push_data_url = 'http://39.96.243.14:9191/api/gpu/submit'
 
     def run(self):
         i = 0
         while True:
+            result_dict = self.que_ret.get(block=True)
             try:
-                result_dict = self.que_ret.get(block=True)
-                print(time.ctime(), " file: ", result_dict["json_id"], "finished.")
                 json_info = success_ret_info(result_dict)
-                # print(time.ctime(), " file: ", result_dict["json_id"],
-                #   " push result: ", json_info)
-                # json_info = success_ret_info(result_dict)
-                url = (
-                    self.push_data_url
-                    + "?customStudyUid="
-                    + result_dict["customStudyInstanceUid"]
-                )
+                url = self.push_data_url + '?customStudyUid=' + result_dict['customStudyInstanceUid']
                 result = requests.post(url, json_info, timeout=2)
-                result_json = json_info
+                print(time.ctime(), " file: ", result_dict["json_id"], "finished.")
+                result_json = result.json()
                 if not result_json:
                     print(time.ctime(), " ", i, "Push operation result is None.")
                 i += 1
-                if os.path.exists(result_dict["data_path"]):
-                    shutil.rmtree(result_dict["data_path"])
-                print(time.ctime(), " ", i, " {} ".format(json_info))
-                # del result_dict, result, result_json, url
-                del result_dict, result_json
+                if os.path.exists(result_dict['data_path']):
+                    shutil.rmtree(result_dict['data_path'])
+                print(i, ' {} : {} '.format(result_json, json_info))
+                del result_dict, result, result_json, url
             except Exception as e:
-                print(time.ctime(), "Push operation; ", e)
+                print(e)
 
 
 def pull_from_json(i):
